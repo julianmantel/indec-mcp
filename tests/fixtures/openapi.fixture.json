@@ -1,0 +1,149 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Catálogo API-INDEC Fixture",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/ipc_nacional": {
+      "get": {
+        "summary": "Índice de Precios al Consumidor (IPC)",
+        "description": "Índice de precios al consumidor nacional con aperturas por región",
+        "tags": ["Dirección de Índices de Precios de Consumo"],
+        "parameters": [
+          { "name": "select", "in": "query" },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "Ordenamiento. Ej: id.desc. Para paginar, incluya la clave completa: periodo,region,codigo"
+          },
+          { "name": "limit", "in": "query" },
+          { "name": "offset", "in": "query" },
+          { "name": "Prefer", "in": "header" },
+          { "name": "periodo", "in": "query" },
+          { "name": "anio", "in": "query" },
+          { "name": "mes", "in": "query" },
+          { "name": "valor", "in": "query" }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ipc_nacional"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mercado_trabajo_eph": {
+      "get": {
+        "summary": "Principales tasas del mercado de trabajo (EPH)",
+        "description": "Tasas de mercado de trabajo estimadas a partir de la EPH",
+        "tags": ["Dirección Nacional de Estadísticas de Condiciones de Vida"],
+        "parameters": [
+          {
+            "name": "order",
+            "in": "query",
+            "description": "Para paginar, incluya la clave completa: area_geografica_nom,periodo"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/mercado_trabajo_eph"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/comercio_exterior_nomenclaturas": {
+      "get": {
+        "summary": "Códigos de comercio exterior",
+        "description": "Diccionario de códigos y nomenclaturas",
+        "tags": ["Dirección Nacional de Estadísticas del Sector Externo"],
+        "parameters": [
+          {
+            "name": "order",
+            "in": "query",
+            "description": "Para paginar, incluya la clave completa: nombre_columna,codigo"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/comercio_exterior_nomenclaturas"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ipc_nacional": {
+        "type": "object",
+        "properties": {
+          "periodo": { "type": "string", "description": "Período AAAAMM" },
+          "anio": { "type": "number", "description": "Año de referencia" },
+          "mes": { "type": "number", "description": "Mes de referencia" },
+          "region": { "type": "string", "description": "Región estadística" },
+          "codigo": { "type": "string", "description": "Código de categoría" },
+          "valor": {
+            "description": "Valor del indicador",
+            "anyOf": [{ "type": "number" }, { "type": "null" }]
+          }
+        }
+      },
+      "mercado_trabajo_eph": {
+        "type": "object",
+        "properties": {
+          "periodo": { "type": "string", "description": "Período" },
+          "anio": { "type": "number", "description": "Año" },
+          "trimestre": { "type": "number", "description": "Trimestre (1 a 4)" },
+          "area_geografica_nom": {
+            "type": "string",
+            "description": "Nombre de aglomerado"
+          },
+          "tasa_de_desocupacion": {
+            "anyOf": [{ "type": "number" }, { "type": "null" }],
+            "description": "Tasa de desocupación"
+          }
+        }
+      },
+      "comercio_exterior_nomenclaturas": {
+        "type": "object",
+        "properties": {
+          "nombre_columna": {
+            "type": "string",
+            "description": "Columna referenciada"
+          },
+          "codigo": { "type": "string", "description": "Código" },
+          "codigo_descripcion": {
+            "type": "string",
+            "description": "Descripción"
+          }
+        }
+      }
+    }
+  }
+}

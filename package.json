@@ -1,0 +1,40 @@
+{
+  "name": "indec-mcp",
+  "version": "0.1.0",
+  "description": "Servidor MCP de solo lectura para consultar estadísticas oficiales de INDEC Argentina",
+  "type": "module",
+  "bin": {
+    "indec-mcp": "./dist/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "dist",
+    "docs/openapi.snapshot.json",
+    "README.md"
+  ],
+  "scripts": {
+    "clean": "node scripts/clean.mjs",
+    "gen": "tsx scripts/gen-registry.ts",
+    "build": "npm run clean && tsc",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.9",
+    "eslint": "^9.21.0",
+    "prettier": "^3.5.2",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.72.2",
+    "vitest": "^3.0.7"
+  }
+}
