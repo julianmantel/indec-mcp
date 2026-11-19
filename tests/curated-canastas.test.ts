@@ -82,7 +82,7 @@ describe("Curated Tool: indec_get_canastas", () => {
     const text = res.content[0]?.text || "";
     expect(text).toContain("428720");
     expect(text).toContain("964620");
-    expect(text).toContain("Fuente: INDEC — Catálogo API-INDEC");
+    expect(text).toContain("Fuente: INDEC - Catálogo API-INDEC");
   });
 
   it("filtra solo Canasta Básica Alimentaria (CBA)", async () => {
@@ -109,7 +109,7 @@ describe("Curated Tool: indec_get_canastas", () => {
     );
 
     const callUrl = fetchMock.mock.calls[0][0];
-    expect(callUrl).toContain("codigo=ilike.*CBA*");
+    expect(callUrl).toContain("codigo=eq.CBA");
     expect(callUrl).toContain("periodo=eq.202409");
   });
 
@@ -142,7 +142,7 @@ describe("Curated Tool: indec_get_canastas", () => {
     const callUrl = fetchMock.mock.calls[0][0];
     expect(callUrl).toContain("periodo=gte.202401");
     expect(callUrl).toContain("periodo=lte.202402");
-    expect(callUrl).toContain("codigo=ilike.*CBT*");
+    expect(callUrl).toContain("codigo=eq.CBT");
     expect(callUrl).toContain("order=periodo.asc");
   });
 
@@ -180,6 +180,44 @@ describe("Curated Tool: indec_get_canastas", () => {
     } finally {
       consoleErrorSpy.mockRestore();
     }
+  });
+
+  it("traduce el tipo de indicador a los códigos de la API", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      headers: new Headers({ "Content-Range": "0-0/1" }),
+      json: async () => [{ periodo: "202409", valor: 1 }],
+    });
+    const client = new IndecHttpClient({
+      token: mockToken,
+      fetchFn: fetchMock as unknown as typeof fetch,
+      cacheTtlSeconds: 0,
+    });
+
+    await handleIndecGetCanastas(
+      {
+        desde: "202409",
+        hasta: "202409",
+        tipo_indicador: "variación intermensual",
+      },
+      makeToolContext(client)
+    );
+    const params1 = new URL(fetchMock.mock.calls[0][0]).searchParams;
+    expect(params1.get("tipo_de_indicador")).toBe("eq.v_m");
+
+    await handleIndecGetCanastas(
+      { desde: "202409", hasta: "202409", tipo_indicador: "línea" },
+      makeToolContext(client)
+    );
+    const params2 = new URL(fetchMock.mock.calls[1][0]).searchParams;
+    expect(params2.get("codigo")).toBe("in.(CBA,CBT)");
+
+    expect(
+      getCanastasInputSchema.safeParse({
+        tipo_indicador: "variación acumulada",
+      }).success
+    ).toBe(false);
   });
 
   it("createMcpServer registra indec_get_canastas", () => {

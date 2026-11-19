@@ -74,18 +74,16 @@ describe("Curated Tool: indec_get_pobreza", () => {
     const secondUrl = fetchMock.mock.calls[1][0];
     expect(secondUrl).toContain("pobreza_eph");
     expect(secondUrl).toContain("periodo=eq.202401");
-    expect(secondUrl).toContain(
-      "area_geografica_nom=ilike.*Total+31+aglomerados+urbanos*"
-    );
+    expect(secondUrl).toContain("area_geografica_nom=eq.T_31_A");
 
     const text = res.content[0]?.text || "";
     expect(text).toContain('"tasa_pobreza_personas": 52.9');
     expect(text).toContain(
-      "Fuente: INDEC — Catálogo API-INDEC, dataset pobreza_eph"
+      "Fuente: INDEC - Catálogo API-INDEC, dataset pobreza_eph"
     );
   });
 
-  it("filtra por aglomerado urbano específico", async () => {
+  it("filtra por aglomerado urbano específico y advierte si no existe", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
@@ -99,7 +97,7 @@ describe("Curated Tool: indec_get_pobreza", () => {
       cacheTtlSeconds: 0,
     });
 
-    await handleIndecGetPobreza(
+    const res = await handleIndecGetPobreza(
       {
         anio: 2024,
         semestre: 1,
@@ -112,6 +110,7 @@ describe("Curated Tool: indec_get_pobreza", () => {
     expect(callUrl).toContain("anio=eq.2024");
     expect(callUrl).toContain("semestre=eq.1");
     expect(callUrl).toContain("area_geografica_nom=ilike.*Gran+C%C3%B3rdoba*");
+    expect(res.content[0]?.text).toContain("solo publica el área 'T_31_A'");
   });
 
   it("con todos_aglomerados: true no filtra por área", async () => {
@@ -233,6 +232,15 @@ describe("Curated Tool: indec_get_pobreza", () => {
     } finally {
       consoleErrorSpy.mockRestore();
     }
+  });
+
+  it("valida el formato semestral de desde/hasta", () => {
+    expect(getPobrezaInputSchema.safeParse({ desde: "202301" }).success).toBe(
+      false
+    );
+    expect(getPobrezaInputSchema.safeParse({ desde: "20231S" }).success).toBe(
+      true
+    );
   });
 
   it("createMcpServer registra indec_get_pobreza", () => {

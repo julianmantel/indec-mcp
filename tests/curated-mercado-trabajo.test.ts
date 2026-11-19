@@ -73,16 +73,14 @@ describe("Curated Tool: indec_get_mercado_trabajo", () => {
     const secondUrl = fetchMock.mock.calls[1][0];
     expect(secondUrl).toContain("mercado_trabajo_eph");
     expect(secondUrl).toContain("periodo=eq.202402");
-    expect(secondUrl).toContain(
-      "area_geografica_nom=ilike.*Total+31+aglomerados+urbanos*"
-    );
+    expect(secondUrl).toContain("area_geografica_nom=eq.T_31_A");
 
     const text = res.content[0]?.text || "";
     expect(text).toContain('"tasa_de_desocupacion": 7.6');
-    expect(text).toContain("Fuente: INDEC — Catálogo API-INDEC");
+    expect(text).toContain("Fuente: INDEC - Catálogo API-INDEC");
   });
 
-  it("filtra por aglomerado urbano específico", async () => {
+  it("filtra por aglomerado urbano específico y advierte si no existe", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
@@ -96,7 +94,7 @@ describe("Curated Tool: indec_get_mercado_trabajo", () => {
       cacheTtlSeconds: 0,
     });
 
-    await handleIndecGetMercadoTrabajo(
+    const res = await handleIndecGetMercadoTrabajo(
       {
         anio: 2024,
         trimestre: 2,
@@ -109,6 +107,7 @@ describe("Curated Tool: indec_get_mercado_trabajo", () => {
     expect(callUrl).toContain("anio=eq.2024");
     expect(callUrl).toContain("trimestre=eq.2");
     expect(callUrl).toContain("area_geografica_nom=ilike.*Gran+Buenos+Aires*");
+    expect(res.content[0]?.text).toContain("solo publica el área 'T_31_A'");
   });
 
   it("con todos_aglomerados: true no filtra por área", async () => {
@@ -204,6 +203,15 @@ describe("Curated Tool: indec_get_mercado_trabajo", () => {
     } finally {
       consoleErrorSpy.mockRestore();
     }
+  });
+
+  it("valida el formato trimestral de desde/hasta", () => {
+    expect(
+      getMercadoTrabajoInputSchema.safeParse({ desde: "202301" }).success
+    ).toBe(false);
+    expect(
+      getMercadoTrabajoInputSchema.safeParse({ desde: "20231T" }).success
+    ).toBe(true);
   });
 
   it("createMcpServer registra indec_get_mercado_trabajo", () => {

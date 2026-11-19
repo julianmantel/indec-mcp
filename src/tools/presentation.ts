@@ -5,7 +5,6 @@ export interface TextResult {
 }
 
 export const API_SOURCE = "INDEC - Catálogo API-INDEC";
-export const API_SOURCE_EM_DASH = "INDEC — Catálogo API-INDEC";
 
 export const AUTH_ERROR_MESSAGE = [
   "Error de autenticación: Se requiere un token JWT válido para consultar datos de la API del INDEC.",
@@ -42,7 +41,7 @@ export function jsonBlock(value: unknown): string {
  */
 export function sourceLine(datasetId?: string): string {
   return datasetId
-    ? `Fuente: ${API_SOURCE_EM_DASH}, dataset ${datasetId}`
+    ? `Fuente: ${API_SOURCE}, dataset ${datasetId}`
     : `*Fuente: ${API_SOURCE}*`;
 }
 

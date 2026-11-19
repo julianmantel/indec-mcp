@@ -77,7 +77,7 @@ describe("Curated Tool: indec_get_canasta_crianza", () => {
     const text = res.content[0]?.text || "";
     expect(text).toContain("447820");
     expect(text).toContain(
-      "Fuente: INDEC — Catálogo API-INDEC, dataset canasta-crianza"
+      "Fuente: INDEC - Catálogo API-INDEC, dataset canasta-crianza"
     );
   });
 

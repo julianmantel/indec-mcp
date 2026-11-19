@@ -1,6 +1,10 @@
 import { MemoryCache } from "./cache.js";
 import { IndecError } from "./errors.js";
-import { buildQueryParams, parseContentRange, type PostgrestQueryParamsOptions } from "./postgrest.js";
+import {
+  buildQueryParams,
+  parseContentRange,
+  type PostgrestQueryParamsOptions,
+} from "./postgrest.js";
 import { IndecTransport, type IndecTransportOptions } from "./transport.js";
 
 export interface IndecHttpClientOptions extends IndecTransportOptions {

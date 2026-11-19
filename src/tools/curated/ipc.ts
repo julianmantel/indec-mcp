@@ -5,9 +5,11 @@ import type { ToolContext } from "../context.js";
 import { buildPeriodFilters } from "../../services/period-filters.js";
 import type { FilterInput } from "../../services/dataset-query.js";
 import type { DatasetId } from "../../datasets/registry.generated.js";
+import { resolveIpcIndicador, resolveIpcNivel } from "./values.js";
 
 const DATASET_ID: DatasetId = "ipc_nacional";
 
+// Se aceptan etiquetas en español y los códigos literales de la API.
 export const tipoIndicadorIpcEnum = z.enum([
   "variación intermensual",
   "variación interanual",
@@ -15,6 +17,14 @@ export const tipoIndicadorIpcEnum = z.enum([
   "índice",
   "incidencia",
   "precio promedio",
+  "v_m",
+  "v_ia",
+  "v_acum",
+  "Indice",
+  "Incidencia_m",
+  "Incidencia_acum",
+  "Incidencia_ia",
+  "Precio promedio",
 ]);
 
 export const regionIpcEnum = z.enum([
@@ -42,7 +52,7 @@ export const getIpcInputSchema = z.object({
     .optional()
     .default("variación intermensual")
     .describe(
-      "Tipo de indicador: 'variación intermensual' (inflación mensual), 'variación interanual', 'variación acumulada', 'índice' (base dic 2016=100), etc. Default: 'variación intermensual'."
+      "Tipo de indicador: 'variación intermensual' (v_m, inflación mensual), 'variación interanual' (v_ia), 'variación acumulada' (v_acum), 'índice' (Indice, base dic 2016=100), 'incidencia', 'precio promedio' o el código literal de la API. Default: 'variación intermensual'."
     ),
   region: regionIpcEnum
     .optional()
@@ -53,7 +63,7 @@ export const getIpcInputSchema = z.object({
     .max(200, "El nivel no puede superar los 200 caracteres")
     .optional()
     .describe(
-      "Nivel de apertura (ej: 'Nivel general', 'División'). Si se omite, devuelve el nivel general y las divisiones correspondientes."
+      "Nivel de apertura (ej: 'Nivel General', 'División', 'Grupo', 'Clase', 'Categoría', 'Producto'). Si se omite, no filtra por nivel."
     ),
   limit: z
     .number()
@@ -90,7 +100,7 @@ export async function handleIndecGetIpc(args: GetIpcInput, ctx: ToolContext) {
     filters.push({
       columna: "tipo_de_indicador",
       operador: "eq",
-      valor: args.tipo_indicador,
+      valor: resolveIpcIndicador(args.tipo_indicador),
     });
   }
 
@@ -106,7 +116,7 @@ export async function handleIndecGetIpc(args: GetIpcInput, ctx: ToolContext) {
     filters.push({
       columna: "nivel",
       operador: "eq",
-      valor: args.nivel,
+      valor: resolveIpcNivel(args.nivel),
     });
   }
 

@@ -75,14 +75,14 @@ Deberías ver `Token configurado: Sí`. Después probá una consulta real, por e
 
 Todos los clientes necesitan lo mismo: el comando `node`, la ruta a `dist/index.js` y la variable `INDEC_API_TOKEN`. Lo que cambia es **dónde** se escribe y **cómo se llama la clave raíz** (`mcpServers`, `servers` o `mcp`).
 
-| Cliente         | Dónde se configura                         | Clave raíz   |
-| --------------- | ------------------------------------------ | ------------ |
-| Claude Code     | Comando `claude mcp add`                   | -            |
-| Claude Desktop  | `claude_desktop_config.json`               | `mcpServers` |
-| Cursor          | `~/.cursor/mcp.json` o `.cursor/mcp.json`  | `mcpServers` |
-| VS Code         | `.vscode/mcp.json`                         | `servers`    |
-| OpenCode        | `opencode.json`                            | `mcp`        |
-| Antigravity     | `mcp_config.json` (desde la UI)            | `mcpServers` |
+| Cliente        | Dónde se configura                        | Clave raíz   |
+| -------------- | ----------------------------------------- | ------------ |
+| Claude Code    | Comando `claude mcp add`                  | -            |
+| Claude Desktop | `claude_desktop_config.json`              | `mcpServers` |
+| Cursor         | `~/.cursor/mcp.json` o `.cursor/mcp.json` | `mcpServers` |
+| VS Code        | `.vscode/mcp.json`                        | `servers`    |
+| OpenCode       | `opencode.json`                           | `mcp`        |
+| Antigravity    | `mcp_config.json` (desde la UI)           | `mcpServers` |
 
 <details>
 <summary><b>Claude Code</b></summary>
@@ -193,7 +193,7 @@ OpenCode define los servidores directamente bajo `mcp`, con `command` como **arr
 }
 ```
 
-Verificá con `opencode mcp list`. Para usarlo, mencioná el servidor en el prompt (por ejemplo: *"…usá indec"*).
+Verificá con `opencode mcp list`. Para usarlo, mencioná el servidor en el prompt (por ejemplo: _"…usá indec"_).
 
 </details>
 
@@ -256,17 +256,15 @@ Después reemplazá el comando del cliente por:
 
 > `.env.example` es solo una plantilla: el servidor **no** carga archivos `.env` por sí solo. El token se lee únicamente si la variable está en el entorno del proceso o si se usa `--env-file`. Esta opción requiere Node.js 20.6+.
 
-
-
 ## Variables de entorno
 
-| Variable                   | Obligatoria | Por defecto                    | Descripción                                                                   |
-| -------------------------- | :---------: | ------------------------------ | ----------------------------------------------------------------------------- |
-| `INDEC_API_TOKEN`          |  Para datos | -                              | Token JWT de la API del INDEC.                                                |
-| `INDEC_API_BASE_URL`       |      No     | `https://api.indec.gob.ar/v1/` | URL base de la API. Solo se acepta HTTPS o `localhost`.                       |
-| `INDEC_API_ALLOWED_HOSTS`  |      No     | `api.indec.gob.ar`, loopback   | Hosts permitidos para la URL base, separados por coma y sin puerto.           |
-| `INDEC_CACHE_TTL_SECONDS`  |      No     | `3600`                         | Vida de la caché en memoria, en segundos. `0` la desactiva.                   |
-| `INDEC_REQUEST_TIMEOUT_MS` |      No     | `30000`                        | Timeout por solicitud HTTP, en milisegundos.                                  |
+| Variable                   | Obligatoria | Por defecto                    | Descripción                                                         |
+| -------------------------- | :---------: | ------------------------------ | ------------------------------------------------------------------- |
+| `INDEC_API_TOKEN`          | Para datos  | -                              | Token JWT de la API del INDEC.                                      |
+| `INDEC_API_BASE_URL`       |     No      | `https://api.indec.gob.ar/v1/` | URL base de la API. Solo se acepta HTTPS o `localhost`.             |
+| `INDEC_API_ALLOWED_HOSTS`  |     No      | `api.indec.gob.ar`, loopback   | Hosts permitidos para la URL base, separados por coma y sin puerto. |
+| `INDEC_CACHE_TTL_SECONDS`  |     No      | `3600`                         | Vida de la caché en memoria, en segundos. `0` la desactiva.         |
+| `INDEC_REQUEST_TIMEOUT_MS` |     No      | `30000`                        | Timeout por solicitud HTTP, en milisegundos.                        |
 
 ## Herramientas disponibles
 
@@ -291,28 +289,28 @@ El flujo recomendado para consultas libres es: **listar → describir → consul
 
 Si no indicás fechas, devuelven **solo el último período publicado**.
 
-| Herramienta                 | Descripción                                                           |
-| --------------------------- | --------------------------------------------------------------------- |
-| `indec_get_ipc`             | IPC e inflación: nivel general o divisiones, por región y variación.  |
-| `indec_get_emae`            | EMAE a nivel general o desagregado por sectores de actividad.         |
-| `indec_get_canastas`        | Canastas Básicas Alimentaria (CBA) y Total (CBT).                     |
-| `indec_get_canasta_crianza` | Canasta de crianza por tramos de edad.                                |
-| `indec_get_mercado_trabajo` | Tasas de actividad, empleo, desocupación y subocupación (EPH).        |
-| `indec_get_pobreza`         | Incidencia de pobreza e indigencia en personas y hogares (EPH).       |
-| `indec_get_salarios`        | Índice de Salarios por sector y tipo de indicador.                    |
+| Herramienta                 | Descripción                                                          |
+| --------------------------- | -------------------------------------------------------------------- |
+| `indec_get_ipc`             | IPC e inflación: nivel general o divisiones, por región y variación. |
+| `indec_get_emae`            | EMAE a nivel general o desagregado por sectores de actividad.        |
+| `indec_get_canastas`        | Canastas Básicas Alimentaria (CBA) y Total (CBT).                    |
+| `indec_get_canasta_crianza` | Canasta de crianza por tramos de edad.                               |
+| `indec_get_mercado_trabajo` | Tasas de actividad, empleo, desocupación y subocupación (EPH).       |
+| `indec_get_pobreza`         | Incidencia de pobreza e indigencia en personas y hogares (EPH).      |
+| `indec_get_salarios`        | Índice de Salarios por sector y tipo de indicador.                   |
 
 ## Solución de problemas
 
-| Síntoma                                                  | Causa probable y solución                                                                                                                                  |
-| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| El servidor no aparece o figura como desconectado        | Falta compilar (`npm run build`), la ruta a `dist/index.js` no es **absoluta** o tiene errores de escapado en Windows. Reiniciá el cliente tras editar la config. |
-| `Error de autenticación` / `Token no configurado`        | `INDEC_API_TOKEN` no llegó al proceso. Revisá el bloque `env` (u `environment` en OpenCode) o la ruta de `--env-file`. `indec_status` te lo confirma.      |
-| Error 401 al consultar                                   | El token es inválido o venció (duran 12 meses). Generá uno nuevo en <https://api.indec.gob.ar>.                                                            |
-| Error 429                                                | Límite de solicitudes de la API. Esperá unos segundos; el servidor ya reintenta automáticamente con espera creciente.                                      |
-| `node: bad option: --env-file`                           | Tu Node es anterior a 20.6. Actualizalo o usá el bloque `env` del cliente.                                                                                 |
-| Falla en OpenCode con la config copiada de otro cliente  | OpenCode usa `mcp` → nombre → `type`/`command` (arreglo)/`environment`. No acepta `mcpServers` ni `env`.                                                   |
-| Antigravity registra el servidor pero no hay herramientas | Revisá el JSON en *View raw config* y recargá el panel MCP. Para servidores locales se usa `command`/`args`/`env`.                                          |
-| Resultados incompletos o columnas que no existen         | La API del INDEC está en **BETA** y puede cambiar. Ejecutá `indec_status` para ver si el spec remoto difiere y consultá `indec_describe_dataset`.          |
+| Síntoma                                                   | Causa probable y solución                                                                                                                                         |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| El servidor no aparece o figura como desconectado         | Falta compilar (`npm run build`), la ruta a `dist/index.js` no es **absoluta** o tiene errores de escapado en Windows. Reiniciá el cliente tras editar la config. |
+| `Error de autenticación` / `Token no configurado`         | `INDEC_API_TOKEN` no llegó al proceso. Revisá el bloque `env` (u `environment` en OpenCode) o la ruta de `--env-file`. `indec_status` te lo confirma.             |
+| Error 401 al consultar                                    | El token es inválido o venció (duran 12 meses). Generá uno nuevo en <https://api.indec.gob.ar>.                                                                   |
+| Error 429                                                 | Límite de solicitudes de la API. Esperá unos segundos; el servidor ya reintenta automáticamente con espera creciente.                                             |
+| `node: bad option: --env-file`                            | Tu Node es anterior a 20.6. Actualizalo o usá el bloque `env` del cliente.                                                                                        |
+| Falla en OpenCode con la config copiada de otro cliente   | OpenCode usa `mcp` → nombre → `type`/`command` (arreglo)/`environment`. No acepta `mcpServers` ni `env`.                                                          |
+| Antigravity registra el servidor pero no hay herramientas | Revisá el JSON en _View raw config_ y recargá el panel MCP. Para servidores locales se usa `command`/`args`/`env`.                                                |
+| Resultados incompletos o columnas que no existen          | La API del INDEC está en **BETA** y puede cambiar. Ejecutá `indec_status` para ver si el spec remoto difiere y consultá `indec_describe_dataset`.                 |
 
 Para depurar de forma aislada, abrí el servidor en el inspector oficial de MCP (reemplazá el token):
 
@@ -373,11 +371,12 @@ src/
 
 ## Casos de uso
 
-### 1.  Perfil regional para focalizar programas
+### 1. Perfil regional para focalizar programas
 
 **Situación:** un organismo público o un equipo de investigación necesita un panorama actualizado de pobreza, empleo y costo de vida para un informe o una presentación.
 
 **Prompt pasado el agente**
+
 ```text
 Preparame un tablero de situación social con el último semestre publicado:
 pobreza e indigencia (personas y hogares) con su variación contra el semestre
@@ -395,6 +394,7 @@ y si está marcado como provisorio.
 **Situación:** una nota o un trabajo académico requiere datos con origen verificable y mencionar qué dataset se usó.
 
 **Prompt pasado el agente**
+
 ```text
 Listá los datasets del INDEC relacionados con comercio exterior, describí las
 columnas del más relevante y traé la serie de los últimos 5 años.

@@ -48,7 +48,7 @@ describe("Curated Tool: indec_get_ipc", () => {
           {
             periodo: "202410",
             region: "Nacional",
-            tipo_de_indicador: "variación intermensual",
+            tipo_de_indicador: "v_m",
             valor: 2.7,
             descripcion: "Nivel general",
           },
@@ -73,15 +73,13 @@ describe("Curated Tool: indec_get_ipc", () => {
     const secondUrl = fetchMock.mock.calls[1][0];
     expect(secondUrl).toContain("periodo=eq.202410");
     expect(secondUrl).toContain("region=eq.Nacional");
-    expect(secondUrl).toContain(
-      "tipo_de_indicador=eq.variaci%C3%B3n+intermensual"
-    );
+    expect(secondUrl).toContain("tipo_de_indicador=eq.v_m");
 
     const text = res.content[0]?.text || "";
     expect(text).toContain('"periodo": "202410"');
     expect(text).toContain('"valor": 2.7');
     expect(text).toContain(
-      "Fuente: INDEC — Catálogo API-INDEC, dataset ipc_nacional"
+      "Fuente: INDEC - Catálogo API-INDEC, dataset ipc_nacional"
     );
   });
 
@@ -189,6 +187,38 @@ describe("Curated Tool: indec_get_ipc", () => {
     } finally {
       consoleErrorSpy.mockRestore();
     }
+  });
+
+  it("traduce etiquetas y niveles a los valores literales de la API", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      headers: new Headers({ "Content-Range": "0-0/1" }),
+      json: async () => [{ periodo: "202410", valor: 230 }],
+    });
+    const client = new IndecHttpClient({
+      token: mockToken,
+      fetchFn: fetchMock as unknown as typeof fetch,
+      cacheTtlSeconds: 0,
+    });
+
+    await handleIndecGetIpc(
+      {
+        desde: "202410",
+        hasta: "202410",
+        tipo_indicador: "variación interanual",
+        nivel: "nivel general",
+      },
+      makeToolContext(client)
+    );
+
+    const params = new URL(fetchMock.mock.calls[0][0]).searchParams;
+    expect(params.get("tipo_de_indicador")).toBe("eq.v_ia");
+    expect(params.get("nivel")).toBe("eq.Nivel General");
+
+    expect(
+      getIpcInputSchema.safeParse({ tipo_indicador: "no-existe" }).success
+    ).toBe(false);
   });
 
   it("createMcpServer registra indec_get_ipc en la lista de tools", () => {

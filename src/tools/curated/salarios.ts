@@ -4,6 +4,7 @@ import { errorResult, sourceLine } from "../presentation.js";
 import type { ToolContext } from "../context.js";
 import { isAuthOrRateLimitError } from "../../client/errors.js";
 import type { DatasetId } from "../../datasets/registry.generated.js";
+import { resolveSalarioIndicador } from "./values.js";
 
 const DATASET_ID: DatasetId = "indice_salarios";
 
@@ -31,7 +32,7 @@ export const getSalariosInputSchema = z.object({
     .optional()
     .default("índice")
     .describe(
-      "Tipo de indicador a buscar en la columna 'tipo_de_indicador' (ej: 'índice', 'variación intermensual', 'variación interanual', 'variación acumulada'). La búsqueda es insensible a mayúsculas. Use 'todos' para no filtrar. Default: 'índice'."
+      "Tipo de indicador de la columna 'tipo_de_indicador': 'índice' (Indice), 'variación intermensual' (v_m), 'variación interanual' (v_ia), 'variación acumulada' (v_acum) o el código literal. Use 'todos' para no filtrar. Default: 'índice'."
     ),
   limit: z
     .number()
@@ -131,12 +132,15 @@ export async function handleIndecGetSalarios(
     });
   }
 
-  if (args.tipo_indicador && args.tipo_indicador.toLowerCase() !== "todos") {
-    filters.push({
-      columna: "tipo_de_indicador",
-      operador: "ilike",
-      valor: `*${args.tipo_indicador}*`,
-    });
+  if (args.tipo_indicador) {
+    const tipoIndicador = resolveSalarioIndicador(args.tipo_indicador);
+    if (tipoIndicador) {
+      filters.push({
+        columna: "tipo_de_indicador",
+        operador: "eq",
+        valor: tipoIndicador,
+      });
+    }
   }
 
   const order = args.desde || args.hasta ? "periodo.asc" : "periodo.desc";

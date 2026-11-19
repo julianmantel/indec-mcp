@@ -269,7 +269,7 @@ describe("Query Tools", () => {
       expect(text).toContain("- **Total en dataset / filtro:** 2");
       expect(text).toContain('"periodo": "202401"');
       expect(text).toContain(
-        "Fuente: INDEC — Catálogo API-INDEC, dataset ipc_nacional"
+        "Fuente: INDEC - Catálogo API-INDEC, dataset ipc_nacional"
       );
       expect(text).not.toContain("Respuesta truncada");
     });
@@ -356,7 +356,7 @@ describe("Query Tools", () => {
       );
       expect(text).toContain("103.545");
       expect(text).toContain(
-        "Fuente: INDEC — Catálogo API-INDEC, dataset ipc_nacional"
+        "Fuente: INDEC - Catálogo API-INDEC, dataset ipc_nacional"
       );
 
       const calledInit = fetchMock.mock.calls[0][1];

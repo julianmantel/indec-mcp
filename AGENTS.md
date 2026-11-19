@@ -18,37 +18,13 @@ Servidor MCP (Model Context Protocol) de **solo lectura** para consultar las est
 - Listar/describir datasets debe funcionar **sin token** (usa el spec público).
 - Si falta el token en una tool que lo requiere, devolver un error claro y accionable, no un stack trace.
 
-## 3. Stack utilizado y estructura del proyecto
+## 3. Stack utilizado
 
 - **TypeScript** estricto (`"strict": true`), Node.js >= 20, ESM.
 - SDK: `@modelcontextprotocol/sdk` (oficial). Validación de inputs con `zod`.
 - Transporte: **stdio** por defecto.
 - Tests: `vitest`. Lint/format: `eslint` + `prettier`.
 - HTTP con `fetch` nativo. Sin dependencias innecesarias.
-- Estructura:
-
-```
-indec-mcp/
-│
-├── README.md
-├── package.json
-├── tsconfig.json
-├── .env.example
-├── docs/
-│   └── openapi.snapshot.json
-├── scripts/
-│   └── gen-registry.ts           # genera el registry desde el spec
-├── src/
-│   ├── index.ts                  # composition root (stdio)
-│   ├── server.ts                 # registro de las 12 herramientas MCP
-│   ├── container.ts              # construcción de cliente, registry y servicio
-│   ├── config.ts                 # variables de entorno validadas con zod
-│   ├── client/                   # acceso a la API: transporte HTTP, caché, PostgREST y errores
-│   ├── datasets/                 # datasets: tipos, registry y datos generados del spec
-│   ├── services/                 # lógica de negocio: validación y ejecución de consultas, último período, filtros
-│   └── tools/                    # herramientas MCP: definiciones, presentación de respuestas y errores
-└── tests/
-```
 
 ## 4. Diseño de tools MCP
 
@@ -72,7 +48,7 @@ indec-mcp/
 - Validar que columnas y filtros existan en el registry antes de llamar a la API; si no existen, sugerir las válidas.
 - Errores HTTP mapeados a mensajes útiles: 401/403 (token inválido o vencido), 404 (dataset), 429 (rate limit, sugerir esperar), 5xx (reintentar).
 
-## 6. Seguridad 
+## 6. Seguridad
 
 - Timeout por request: `INDEC_REQUEST_TIMEOUT_MS` (default 30000).
 - Caché en memoria: `INDEC_CACHE_TTL_SECONDS` (default 3600, 0 = sin caché).

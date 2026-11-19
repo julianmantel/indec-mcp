@@ -5,6 +5,7 @@ import type { ToolContext } from "../context.js";
 import { buildPeriodFilters } from "../../services/period-filters.js";
 import type { FilterInput } from "../../services/dataset-query.js";
 import type { DatasetId } from "../../datasets/registry.generated.js";
+import { resolveEphArea } from "./values.js";
 
 const DATASET_ID: DatasetId = "mercado_trabajo_eph";
 
@@ -27,20 +28,30 @@ export const getMercadoTrabajoInputSchema = z.object({
     ),
   desde: z
     .string()
-    .max(200, "El período no puede superar los 200 caracteres")
+    .regex(
+      /^\d{4}[1-4]T$/,
+      "El formato debe ser AAAAT (ej: '202401' = primer trimestre de 2024)"
+    )
     .optional()
-    .describe("Período inicial (ej: '202301'). Opcional."),
+    .describe(
+      "Período inicial en formato AAAAT, donde T es el trimestre 1 a 4 (ej: '202401'). Opcional."
+    ),
   hasta: z
     .string()
-    .max(200, "El período no puede superar los 200 caracteres")
+    .regex(
+      /^\d{4}[1-4]T$/,
+      "El formato debe ser AAAAT (ej: '202404' = cuarto trimestre de 2024)"
+    )
     .optional()
-    .describe("Período final (ej: '202402'). Opcional."),
+    .describe(
+      "Período final en formato AAAAT, donde T es el trimestre 1 a 4 (ej: '202404'). Opcional."
+    ),
   area_geografica: z
     .string()
     .max(200, "El área geográfica no puede superar los 200 caracteres")
     .optional()
     .describe(
-      "Nombre del área o aglomerado urbano (ej: 'Total 31 aglomerados urbanos', 'Gran Buenos Aires', 'Córdoba', 'Rosario'). Si se omite y todos_aglomerados es false, busca por defecto el total de 31 aglomerados."
+      "Área geográfica. La API solo publica 'T_31_A' (total de 31 aglomerados urbanos); también acepta ese nombre en español. Si se omite y todos_aglomerados es false, filtra por 'T_31_A'."
     ),
   todos_aglomerados: z
     .boolean()
@@ -113,12 +124,14 @@ export async function handleIndecGetMercadoTrabajo(
     });
   }
 
-  if (!args.todos_aglomerados) {
-    const area = args.area_geografica?.trim() || "Total 31 aglomerados urbanos";
+  const areaFilter = args.todos_aglomerados
+    ? undefined
+    : resolveEphArea(args.area_geografica);
+  if (areaFilter) {
     filters.push({
       columna: "area_geografica_nom",
-      operador: "ilike",
-      valor: `*${area}*`,
+      operador: areaFilter.operador,
+      valor: areaFilter.valor,
     });
   }
 
@@ -150,5 +163,8 @@ export async function handleIndecGetMercadoTrabajo(
     ctx
   );
 
-  return appendWarning(result, period.warning);
+  const warning = [period.warning, areaFilter?.warning]
+    .filter(Boolean)
+    .join("\n\n");
+  return appendWarning(result, warning || undefined);
 }

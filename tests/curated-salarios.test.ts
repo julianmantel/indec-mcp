@@ -50,7 +50,7 @@ describe("Curated Tool: indec_get_salarios", () => {
           {
             periodo: "202410",
             descripcion: "Sector privado registrado",
-            tipo_de_indicador: "índice",
+            tipo_de_indicador: "Indice",
             valor: 12345.6,
           },
         ],
@@ -77,14 +77,16 @@ describe("Curated Tool: indec_get_salarios", () => {
     const secondUrl = fetchMock.mock.calls[1][0];
     expect(secondUrl).toContain("periodo=eq.202410");
     expect(secondUrl).toContain("descripcion=ilike.*privado*");
-    expect(secondUrl).toContain("tipo_de_indicador=ilike.*%C3%ADndice*");
+    expect(new URL(secondUrl).searchParams.get("tipo_de_indicador")).toBe(
+      "eq.Indice"
+    );
     expect(secondUrl).toContain("order=periodo.desc");
 
     const text = res.content[0]?.text || "";
     expect(text).toContain('"periodo": "202410"');
     expect(text).toContain('"valor": 12345.6');
     expect(text).toContain(
-      "Fuente: INDEC — Catálogo API-INDEC, dataset indice_salarios"
+      "Fuente: INDEC - Catálogo API-INDEC, dataset indice_salarios"
     );
   });
 
@@ -200,6 +202,33 @@ describe("Curated Tool: indec_get_salarios", () => {
         handleIndecGetSalarios({}, makeToolContext(client))
       ).rejects.toMatchObject({ status });
     }
+  });
+
+  it("traduce las etiquetas de indicador a los códigos de la API", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      headers: new Headers({ "Content-Range": "0-0/1" }),
+      json: async () => [{ periodo: "202410", valor: 1 }],
+    });
+    const client = new IndecHttpClient({
+      token: mockToken,
+      fetchFn: fetchMock as unknown as typeof fetch,
+      cacheTtlSeconds: 0,
+    });
+
+    await handleIndecGetSalarios(
+      {
+        desde: "202410",
+        hasta: "202410",
+        tipo_indicador: "variación interanual",
+      },
+      makeToolContext(client)
+    );
+
+    expect(
+      new URL(fetchMock.mock.calls[0][0]).searchParams.get("tipo_de_indicador")
+    ).toBe("eq.v_ia");
   });
 
   it("createMcpServer registra indec_get_salarios en la lista de tools", async () => {

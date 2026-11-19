@@ -1,4 +1,5 @@
-export type PostgrestOperator = "eq" | "neq" | "gt" | "gte" | "lt" | "lte" | "like" | "ilike" | "in" | "is";
+export type PostgrestOperator =
+  "eq" | "neq" | "gt" | "gte" | "lt" | "lte" | "like" | "ilike" | "in" | "is";
 
 export interface PostgrestFilter {
   column: string;

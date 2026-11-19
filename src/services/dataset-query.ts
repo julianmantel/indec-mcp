@@ -1,6 +1,9 @@
 import type { IndecHttpClient, QueryResult } from "../client/indec-client.js";
 import { IndecAuthError } from "../client/errors.js";
-import type { PostgrestFilter, PostgrestOperator } from "../client/postgrest.js";
+import type {
+  PostgrestFilter,
+  PostgrestOperator,
+} from "../client/postgrest.js";
 import type { DatasetMetadata } from "../datasets/types.js";
 import type { DatasetRegistry } from "../datasets/registry.js";
 

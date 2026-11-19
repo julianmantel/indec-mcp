@@ -5,6 +5,7 @@ import type { ToolContext } from "../context.js";
 import { buildPeriodFilters } from "../../services/period-filters.js";
 import type { FilterInput } from "../../services/dataset-query.js";
 import type { DatasetId } from "../../datasets/registry.generated.js";
+import { resolveCanastaIndicador } from "./values.js";
 
 const DATASET_ID: DatasetId = "valorizacion_canastas_cba_cbt";
 
@@ -14,8 +15,15 @@ export const canastaIndicadorEnum = z.enum([
   "todos",
   "variación intermensual",
   "variación interanual",
-  "variación acumulada",
   "línea",
+  "v_m",
+  "v_ia",
+  "CBA",
+  "CBT",
+  "ICE",
+  "Hogar 1",
+  "Hogar 2",
+  "Hogar 3",
 ]);
 
 export const getCanastasInputSchema = z.object({
@@ -39,7 +47,7 @@ export const getCanastasInputSchema = z.object({
     .optional()
     .default("todos")
     .describe(
-      "Tipo de indicador: 'variación intermensual', 'variación interanual', 'línea' o 'todos'. Default: 'todos'."
+      "Tipo de indicador: 'variación intermensual' (v_m), 'variación interanual' (v_ia), 'línea' (CBA y CBT), CBA, CBT, ICE, 'Hogar 1/2/3' o 'todos'. La API no publica variación acumulada. Default: 'todos'."
     ),
   limit: z
     .number()
@@ -77,16 +85,23 @@ export async function handleIndecGetCanastas(
   if (args.canasta && args.canasta !== "todas") {
     filters.push({
       columna: "codigo",
-      operador: "ilike",
-      valor: `*${args.canasta}*`,
+      operador: "eq",
+      valor: args.canasta,
     });
   }
 
-  if (args.tipo_indicador && args.tipo_indicador !== "todos") {
+  const indicador = resolveCanastaIndicador(args.tipo_indicador);
+  if (indicador.codigos) {
+    filters.push({
+      columna: "codigo",
+      operador: "in",
+      valor: indicador.codigos,
+    });
+  } else if (indicador.tipo) {
     filters.push({
       columna: "tipo_de_indicador",
-      operador: "ilike",
-      valor: `*${args.tipo_indicador}*`,
+      operador: "eq",
+      valor: indicador.tipo,
     });
   }
 

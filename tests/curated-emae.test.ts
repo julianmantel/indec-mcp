@@ -47,7 +47,7 @@ describe("Curated Tool: indec_get_emae", () => {
         json: async () => [
           {
             periodo: "202409",
-            tipo_de_indicador: "variación interanual",
+            tipo_de_indicador: "Variación porcentual",
             tipo_de_indicador_descripcion: "Serie original",
             valor: -3.8,
           },
@@ -75,14 +75,16 @@ describe("Curated Tool: indec_get_emae", () => {
     expect(secondUrl).toContain(
       "estimador-mensual-de-actividad-economica-nivel-general"
     );
-    expect(secondUrl).toContain("periodo=eq.202409");
-    expect(secondUrl).toContain(
-      "tipo_de_indicador=eq.variaci%C3%B3n+interanual"
+    const params = new URL(secondUrl).searchParams;
+    expect(params.get("periodo")).toBe("eq.202409");
+    expect(params.get("tipo_de_indicador")).toBe("eq.Variación porcentual");
+    expect(params.get("tipo_de_indicador_descripcion")).toBe(
+      "ilike.*Var % interanual serie original*"
     );
 
     const text = res.content[0]?.text || "";
     expect(text).toContain('"valor": -3.8');
-    expect(text).toContain("Fuente: INDEC — Catálogo API-INDEC");
+    expect(text).toContain("Fuente: INDEC - Catálogo API-INDEC");
   });
 
   it("con rango de fechas y serie desestacionalizada filtra adecuadamente", async () => {
@@ -120,12 +122,11 @@ describe("Curated Tool: indec_get_emae", () => {
     const callUrl = fetchMock.mock.calls[0][0];
     expect(callUrl).toContain("periodo=gte.202401");
     expect(callUrl).toContain("periodo=lte.202402");
-    expect(callUrl).toContain(
-      "tipo_de_indicador_descripcion=ilike.*desestacionalizada*"
+    const params = new URL(callUrl).searchParams;
+    expect(params.get("tipo_de_indicador_descripcion")).toBe(
+      "ilike.*Var % mensual serie desestacionalizada*"
     );
-    expect(callUrl).toContain(
-      "tipo_de_indicador=eq.variaci%C3%B3n+intermensual"
-    );
+    expect(params.get("tipo_de_indicador")).toBe("eq.Variación porcentual");
     expect(callUrl).toContain("order=periodo.asc");
   });
 
@@ -253,6 +254,33 @@ describe("Curated Tool: indec_get_emae", () => {
     } finally {
       consoleErrorSpy.mockRestore();
     }
+  });
+
+  it("rechaza combinaciones que la API no publica sin consultar", async () => {
+    const fetchMock = vi.fn();
+    const client = new IndecHttpClient({
+      token: mockToken,
+      fetchFn: fetchMock as unknown as typeof fetch,
+    });
+
+    const res = await handleIndecGetEmae(
+      {
+        desde: "202408",
+        hasta: "202408",
+        sector: "D",
+        tipo_indicador: "variación intermensual",
+      },
+      makeToolContext(client)
+    );
+
+    expect(res.isError).toBe(true);
+    expect(res.content[0]?.text).toContain("no publica variación intermensual");
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    expect(
+      getEmaeInputSchema.safeParse({ tipo_indicador: "variación acumulada" })
+        .success
+    ).toBe(false);
   });
 
   it("createMcpServer registra indec_get_emae", () => {

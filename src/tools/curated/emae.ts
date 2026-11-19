@@ -1,10 +1,15 @@
 import { z } from "zod";
 import { handleIndecQueryDataset } from "../query.js";
-import { appendWarning } from "../presentation.js";
+import { appendWarning, errorResult, sourceLine } from "../presentation.js";
 import type { ToolContext } from "../context.js";
 import { buildPeriodFilters } from "../../services/period-filters.js";
 import type { FilterInput } from "../../services/dataset-query.js";
 import type { DatasetId } from "../../datasets/registry.generated.js";
+import {
+  resolveEmaeIndicador,
+  type EmaeDatasetKind,
+  type EmaeSerie,
+} from "./values.js";
 
 const DATASET_NIVEL_GENERAL: DatasetId =
   "estimador-mensual-de-actividad-economica-nivel-general";
@@ -14,8 +19,10 @@ const DATASET_SECTORES: DatasetId =
 export const tipoIndicadorEmaeEnum = z.enum([
   "variación interanual",
   "variación intermensual",
-  "variación acumulada",
   "índice",
+  "Variación porcentual",
+  "Variación porcentual interanual",
+  "Índice base 2004=100",
 ]);
 
 export const serieEmaeEnum = z.enum([
@@ -39,7 +46,7 @@ export const getEmaeInputSchema = z.object({
     .optional()
     .default("variación interanual")
     .describe(
-      "Tipo de indicador: 'variación interanual' (crecimiento interanual del PBI/EMAE), 'variación intermensual', 'índice' (base 2004=100) o 'variación acumulada'. Default: 'variación interanual'."
+      "Tipo de indicador: 'variación interanual' (crecimiento interanual del EMAE), 'variación intermensual' (solo nivel general) o 'índice' (base 2004=100). También acepta los valores literales de la API. No hay variación acumulada en este dataset. Default: 'variación interanual'."
     ),
   serie: serieEmaeEnum
     .optional()
@@ -84,6 +91,18 @@ export async function handleIndecGetEmae(args: GetEmaeInput, ctx: ToolContext) {
     );
   }
 
+  const datasetKind: EmaeDatasetKind = consultarSectores
+    ? "sectores"
+    : "general";
+  const indicador = resolveEmaeIndicador(
+    args.tipo_indicador,
+    datasetKind,
+    args.serie as EmaeSerie | undefined
+  );
+  if (indicador.error) {
+    return errorResult(`${indicador.error}\n\n${sourceLine(datasetId)}`);
+  }
+
   const period = await buildPeriodFilters({
     client: ctx.client,
     datasetId,
@@ -95,13 +114,11 @@ export async function handleIndecGetEmae(args: GetEmaeInput, ctx: ToolContext) {
 
   const filters: FilterInput[] = [...period.filters];
 
-  if (args.tipo_indicador) {
-    filters.push({
-      columna: "tipo_de_indicador",
-      operador: "eq",
-      valor: args.tipo_indicador,
-    });
-  }
+  filters.push({
+    columna: "tipo_de_indicador",
+    operador: "eq",
+    valor: indicador.tipo,
+  });
 
   if (consultarSectores && args.sector) {
     const isLetterCode =
@@ -122,11 +139,11 @@ export async function handleIndecGetEmae(args: GetEmaeInput, ctx: ToolContext) {
     }
   }
 
-  if (!consultarSectores && args.serie) {
+  if (indicador.descripcion) {
     filters.push({
       columna: "tipo_de_indicador_descripcion",
       operador: "ilike",
-      valor: `*${args.serie}*`,
+      valor: `*${indicador.descripcion}*`,
     });
   }
 
