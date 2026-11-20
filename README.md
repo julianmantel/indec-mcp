@@ -39,23 +39,21 @@ Qué datasets tiene la API del INDEC sobre comercio exterior?
 2. Verificá tu cuenta con el código OTP que llega por mail.
 3. Generá el token JWT desde tu perfil. **Se muestra una sola vez**, guardalo. Vence a los 12 meses.
 
-**2. Instalá y compilá el servidor**
+**2. Instalá el servidor desde npm**
+
+La forma recomendada es `npx`: descarga y ejecuta la versión publicada, sin clonar el repositorio ni compilar. El comando que usarán los clientes es:
 
 ```bash
-git clone <repo-url>
-cd indec-mcp
-npm install
-npm run build
+npx -y @julianmantel/indec-mcp
 ```
 
-Anotá la **ruta absoluta** al archivo compilado, la vas a necesitar en el paso siguiente:
+Si preferís tenerlo siempre disponible, instalalo globalmente y usá `indec-mcp` como comando:
 
-```text
-<RUTA_AL_PROYECTO>/indec-mcp/dist/index.js
+```bash
+npm install -g @julianmantel/indec-mcp
 ```
 
-> En macOS/Linux podés obtenerla con `pwd` dentro de la carpeta del proyecto y agregando `/dist/index.js`.
-> En Windows, usá barras normales (`C:/Users/vos/indec-mcp/dist/index.js`) o barras invertidas dobles (`C:\\Users\\vos\\indec-mcp\\dist\\index.js`) dentro del JSON.
+No hace falta anotar rutas ni ejecutar `npm run build`: el paquete publicado ya incluye `dist/`.
 
 **3. Conectalo a tu cliente**
 
@@ -73,7 +71,9 @@ Deberías ver `Token configurado: Sí`. Después probá una consulta real, por e
 
 ## Instalación por cliente
 
-Todos los clientes necesitan lo mismo: el comando `node`, la ruta a `dist/index.js` y la variable `INDEC_API_TOKEN`. Lo que cambia es **dónde** se escribe y **cómo se llama la clave raíz** (`mcpServers`, `servers` o `mcp`).
+Todos los clientes necesitan lo mismo: el comando `npx`, el paquete `@julianmantel/indec-mcp` y la variable `INDEC_API_TOKEN`. Si instalaste el paquete globalmente, podés usar `indec-mcp` en lugar de `npx -y @julianmantel/indec-mcp`. Lo que cambia entre clientes es **dónde** se configura y **cómo se llama la clave raíz** (`mcpServers`, `servers` o `mcp`).
+
+> En Windows, si el cliente no encuentra `npx`, usá `npx.cmd` en el campo `command`.
 
 | Cliente        | Dónde se configura                        | Clave raíz   |
 | -------------- | ----------------------------------------- | ------------ |
@@ -88,7 +88,7 @@ Todos los clientes necesitan lo mismo: el comando `node`, la ruta a `dist/index.
 <summary><b>Claude Code</b></summary>
 
 ```bash
-claude mcp add indec --env INDEC_API_TOKEN=<tu_token> -- node <RUTA_AL_PROYECTO>/indec-mcp/dist/index.js
+claude mcp add indec --env INDEC_API_TOKEN=<tu_token> -- npx -y @julianmantel/indec-mcp
 ```
 
 Verificá con `claude mcp list`. Dentro de Claude Code, el comando `/mcp` muestra el estado de cada servidor.
@@ -107,8 +107,8 @@ Abrí **Settings → Developer → Edit Config**, o editá el archivo directamen
 {
   "mcpServers": {
     "indec": {
-      "command": "node",
-      "args": ["<RUTA_AL_PROYECTO>/indec-mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "@julianmantel/indec-mcp"],
       "env": {
         "INDEC_API_TOKEN": "<tu_token>"
       }
@@ -130,8 +130,8 @@ Abrí **Settings → Cursor Settings → MCP → Add new global MCP server**, o 
 {
   "mcpServers": {
     "indec": {
-      "command": "node",
-      "args": ["<RUTA_AL_PROYECTO>/indec-mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "@julianmantel/indec-mcp"],
       "env": {
         "INDEC_API_TOKEN": "<tu_token>"
       }
@@ -160,8 +160,8 @@ Creá `.vscode/mcp.json` en tu workspace. VS Code usa la clave `servers` (no `mc
   "servers": {
     "indec": {
       "type": "stdio",
-      "command": "node",
-      "args": ["<RUTA_AL_PROYECTO>/indec-mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "@julianmantel/indec-mcp"],
       "env": {
         "INDEC_API_TOKEN": "${input:indec-token}"
       }
@@ -183,7 +183,7 @@ OpenCode define los servidores directamente bajo `mcp`, con `command` como **arr
   "mcp": {
     "indec": {
       "type": "local",
-      "command": ["node", "<RUTA_AL_PROYECTO>/indec-mcp/dist/index.js"],
+      "command": ["npx", "-y", "@julianmantel/indec-mcp"],
       "enabled": true,
       "environment": {
         "INDEC_API_TOKEN": "<tu_token>"
@@ -208,8 +208,8 @@ Verificá con `opencode mcp list`. Para usarlo, mencioná el servidor en el prom
 {
   "mcpServers": {
     "indec": {
-      "command": "node",
-      "args": ["<RUTA_AL_PROYECTO>/indec-mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "@julianmantel/indec-mcp"],
       "env": {
         "INDEC_API_TOKEN": "<tu_token>"
       }
@@ -227,15 +227,15 @@ Verificá con `opencode mcp list`. Para usarlo, mencioná el servidor en el prom
 
 Cualquier cliente compatible con transporte **stdio** funciona. Necesita:
 
-- **Comando:** `node`
-- **Argumentos:** `<RUTA_AL_PROYECTO>/indec-mcp/dist/index.js`
+- **Comando:** `npx`
+- **Argumentos:** `-y`, `@julianmantel/indec-mcp`
 - **Variable de entorno:** `INDEC_API_TOKEN=<tu_token>`
 
 </details>
 
-### Alternativa: token desde un archivo `.env`
+### Alternativa: token desde un archivo `.env` (si clonaste el repositorio)
 
-Si preferís no escribir el token en la configuración del cliente (por ejemplo, porque ese archivo se sincroniza o se comparte), guardalo en un `.env` y pasalo con el flag `--env-file` de Node:
+Si instalaste desde npm, poné el token en el bloque `env`/`environment` del cliente. Si clonaste el repositorio y preferís no escribirlo en la configuración (por ejemplo, porque ese archivo se sincroniza o se comparte), guardalo en un `.env` y pasalo con el flag `--env-file` de Node:
 
 ```bash
 cp .env.example .env
@@ -301,22 +301,24 @@ Si no indicás fechas, devuelven **solo el último período publicado**.
 
 ## Solución de problemas
 
-| Síntoma                                                   | Causa probable y solución                                                                                                                                         |
-| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| El servidor no aparece o figura como desconectado         | Falta compilar (`npm run build`), la ruta a `dist/index.js` no es **absoluta** o tiene errores de escapado en Windows. Reiniciá el cliente tras editar la config. |
-| `Error de autenticación` / `Token no configurado`         | `INDEC_API_TOKEN` no llegó al proceso. Revisá el bloque `env` (u `environment` en OpenCode) o la ruta de `--env-file`. `indec_status` te lo confirma.             |
-| Error 401 al consultar                                    | El token es inválido o venció (duran 12 meses). Generá uno nuevo en <https://api.indec.gob.ar>.                                                                   |
-| Error 429                                                 | Límite de solicitudes de la API. Esperá unos segundos; el servidor ya reintenta automáticamente con espera creciente.                                             |
-| `node: bad option: --env-file`                            | Tu Node es anterior a 20.6. Actualizalo o usá el bloque `env` del cliente.                                                                                        |
-| Falla en OpenCode con la config copiada de otro cliente   | OpenCode usa `mcp` → nombre → `type`/`command` (arreglo)/`environment`. No acepta `mcpServers` ni `env`.                                                          |
-| Antigravity registra el servidor pero no hay herramientas | Revisá el JSON en _View raw config_ y recargá el panel MCP. Para servidores locales se usa `command`/`args`/`env`.                                                |
-| Resultados incompletos o columnas que no existen          | La API del INDEC está en **BETA** y puede cambiar. Ejecutá `indec_status` para ver si el spec remoto difiere y consultá `indec_describe_dataset`.                 |
+| Síntoma                                                   | Causa probable y solución                                                                                                                                                                                                                             |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| El servidor no aparece o figura como desconectado         | Con el paquete publicado, confirmá que el cliente usa `npx -y @julianmantel/indec-mcp` (o `npx.cmd` en Windows). Si usás un clon, compilá con `npm run build` y revisá la ruta absoluta a `dist/index.js`. Reiniciá el cliente tras editar la config. |
+| `Error de autenticación` / `Token no configurado`         | `INDEC_API_TOKEN` no llegó al proceso. Revisá el bloque `env` (u `environment` en OpenCode) o la ruta de `--env-file`. `indec_status` te lo confirma.                                                                                                 |
+| Error 401 al consultar                                    | El token es inválido o venció (duran 12 meses). Generá uno nuevo en <https://api.indec.gob.ar>.                                                                                                                                                       |
+| Error 429                                                 | Límite de solicitudes de la API. Esperá unos segundos; el servidor ya reintenta automáticamente con espera creciente.                                                                                                                                 |
+| `node: bad option: --env-file`                            | Tu Node es anterior a 20.6. Actualizalo o usá el bloque `env` del cliente.                                                                                                                                                                            |
+| Falla en OpenCode con la config copiada de otro cliente   | OpenCode usa `mcp` → nombre → `type`/`command` (arreglo)/`environment`. No acepta `mcpServers` ni `env`.                                                                                                                                              |
+| Antigravity registra el servidor pero no hay herramientas | Revisá el JSON en _View raw config_ y recargá el panel MCP. Para servidores locales se usa `command`/`args`/`env`.                                                                                                                                    |
+| Resultados incompletos o columnas que no existen          | La API del INDEC está en **BETA** y puede cambiar. Ejecutá `indec_status` para ver si el spec remoto difiere y consultá `indec_describe_dataset`.                                                                                                     |
 
 Para depurar de forma aislada, abrí el servidor en el inspector oficial de MCP (reemplazá el token):
 
 ```bash
-INDEC_API_TOKEN=<tu_token> npx @modelcontextprotocol/inspector node dist/index.js
+INDEC_API_TOKEN=<tu_token> npx @modelcontextprotocol/inspector npx -y @julianmantel/indec-mcp
 ```
+
+Si estás probando un clon local, reemplazá el último comando por `node dist/index.js` después de `npm run build`.
 
 Los logs del servidor salen por `stderr`; `stdout` está reservado al protocolo MCP.
 

@@ -1,10 +1,21 @@
 {
-  "name": "indec-mcp",
+  "name": "@julianmantel/indec-mcp",
   "version": "0.1.0",
   "description": "Servidor MCP de solo lectura para consultar estadísticas oficiales de INDEC Argentina",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "indec",
+    "argentina",
+    "estadisticas",
+    "datos-abiertos",
+    "inflacion",
+    "ipc"
+  ],
+  "license": "MIT",
   "type": "module",
   "bin": {
-    "indec-mcp": "./dist/index.js"
+    "indec-mcp": "dist/index.js"
   },
   "engines": {
     "node": ">=20"
@@ -12,8 +23,20 @@
   "files": [
     "dist",
     "docs/openapi.snapshot.json",
+    ".env.example",
     "README.md"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/julianmantel/indec-mcp.git"
+  },
+  "homepage": "https://github.com/julianmantel/indec-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/julianmantel/indec-mcp/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "clean": "node scripts/clean.mjs",
     "gen": "tsx scripts/gen-registry.ts",
