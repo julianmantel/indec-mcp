@@ -41,8 +41,6 @@ Qué datasets tiene la API del INDEC sobre comercio exterior?
 
 ## Guía paso a paso
 
-Son cuatro pasos y se hacen una sola vez. Tomá unos 10 minutos.
-
 ### Paso 1. Instalá Node.js
 
 1. Entrá a <https://nodejs.org> y descargá la versión marcada como **LTS**.
@@ -488,7 +486,7 @@ Notas:
 - Los tests usan `fetch` simulado; ninguno requiere token ni red.
 - Las convenciones del proyecto y las reglas para agentes de código están en [`AGENTS.md`](./AGENTS.md).
 
-### Arquitectura
+### Estructura del proyecto
 
 ```text
 src/
