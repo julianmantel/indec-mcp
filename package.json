@@ -1,6 +1,6 @@
 {
   "name": "@julianmantel/indec-mcp",
-  "version": "0.2.2",
+  "version": "0.1.2",
   "description": "Servidor MCP de solo lectura para consultar estadísticas oficiales de INDEC Argentina",
   "keywords": [
     "mcp",
