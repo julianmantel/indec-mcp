@@ -121,8 +121,6 @@ Usá el servidor indec y decime el estado de la conexión (indec_status).
 - Si todo salió bien, te va a mostrar **`Token configurado: Sí`**.
 - Después hacele una pregunta real, por ejemplo: _"Cuál fue la última inflación mensual publicada por el INDEC?"_
 
-Es posible que tu asistente te pida **permiso** la primera vez que usa la herramienta. Es normal: aceptá para que pueda consultar los datos.
-
 Si algo no funciona, mirá [Problemas frecuentes](#problemas-frecuentes).
 
 ## Qué podés pedirle a tu asistente
