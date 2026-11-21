@@ -105,6 +105,109 @@ export function resolveSalarioIndicador(value: string): string | undefined {
   return SALARIO_INDICADORES[key] ?? value;
 }
 
+/**
+ * Series del índice de salarios que publican número índice (`tipo_de_indicador=Indice`).
+ * Los subsectores públicos aparecen en variaciones, pero no en la serie de índice.
+ */
+export const SALARIO_SECTOR_LABELS = [
+  "Nivel general",
+  "Sector privado registrado",
+  "Sector público",
+  "Total registrado",
+  "Total no registrado",
+] as const;
+
+const SALARIO_SECTORES: Record<string, string> = {
+  "nivel general": "Nivel general",
+  "sector privado registrado": "Sector privado registrado",
+  "privado registrado": "Sector privado registrado",
+  "sector publico": "Sector público",
+  publico: "Sector público",
+  "total registrado": "Total registrado",
+  "total no registrado": "Total no registrado",
+};
+
+export function resolveSalarioSector(value: string): string | undefined {
+  return SALARIO_SECTORES[normalizeLabel(value)];
+}
+
+/** Aperturas del ICC que publican número índice. */
+export const ICC_APERTURA_LABELS = [
+  "Nivel general",
+  "Materiales",
+  "Mano de obra",
+  "Gastos generales",
+  "Movimiento de tierra",
+  "Estructura",
+  "Albañilería",
+  "Yesería",
+  "Instalación sanitaria y contraincendios",
+  "Instalación de gas",
+  "Instalación eléctrica",
+  "Carpintería metálica y herrería",
+  "Carpintería de madera",
+  "Ascensores",
+  "Vidrios",
+  "Pintura",
+  "Otros trabajos y gastos",
+] as const;
+
+const ICC_APERTURAS: Record<string, string> = Object.fromEntries(
+  ICC_APERTURA_LABELS.map((label) => [normalizeLabel(label), label])
+);
+
+export function resolveIccApertura(value: string): string | undefined {
+  return ICC_APERTURAS[normalizeLabel(value)];
+}
+
+export const SIPM_INDICADOR_LABELS = ["IPIM", "IPIB", "IPP"] as const;
+
+const SIPM_INDICADORES: Record<string, string> = Object.fromEntries(
+  SIPM_INDICADOR_LABELS.map((label) => [normalizeLabel(label), label])
+);
+
+export function resolveSipmIndicador(value: string): string | undefined {
+  return SIPM_INDICADORES[normalizeLabel(value)];
+}
+
+export type IpiSerie = "original" | "desestacionalizada" | "tendencia-ciclo";
+
+/**
+ * Los literales de `serie` cambian de casing entre los dos datasets del IPI:
+ * manufacturero usa minúsculas y minero usa mayúsculas iniciales.
+ */
+export function resolveIpiSerie(
+  dataset: "ipi_manufacturero" | "ipi_minero",
+  value: string
+): string | undefined {
+  const key = normalizeLabel(value);
+  let serie: IpiSerie | undefined;
+
+  if (key.includes("desestacional")) {
+    serie = "desestacionalizada";
+  } else if (key.includes("tendencia")) {
+    serie = "tendencia-ciclo";
+  } else if (key.includes("original")) {
+    serie = "original";
+  }
+
+  if (!serie) return undefined;
+
+  if (dataset === "ipi_minero") {
+    return {
+      original: "Serie Original",
+      desestacionalizada: "Serie Desestacionalizada",
+      "tendencia-ciclo": "Serie Tendencia-Ciclo",
+    }[serie];
+  }
+
+  return {
+    original: "Serie original",
+    desestacionalizada: "Serie desestacionalizada",
+    "tendencia-ciclo": "Serie tendencia-ciclo",
+  }[serie];
+}
+
 export const EPH_AREA_TOTAL = "T_31_A";
 const EPH_AREA_ALIASES = new Set([
   "t_31_a",

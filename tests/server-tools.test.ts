@@ -17,10 +17,11 @@ const EXPECTED_TOOLS = [
   "indec_get_mercado_trabajo",
   "indec_get_pobreza",
   "indec_get_salarios",
+  "indec_calcular_variacion",
 ];
 
 describe("Servidor MCP", () => {
-  it("expone las 12 tools esperadas y todas son de solo lectura", async () => {
+  it("expone las 13 tools esperadas y todas son de solo lectura", async () => {
     const server = createTestServer();
     const [clientTransport, serverTransport] =
       InMemoryTransport.createLinkedPair();

@@ -31,6 +31,11 @@ import {
   handleIndecGetSalarios,
   getSalariosInputSchema,
 } from "../src/tools/curated/salarios.js";
+import {
+  handleIndecCalcularVariacion,
+  calcularVariacionInputSchema,
+} from "../src/tools/curated/calcular-variacion.js";
+import { SUPPORTED_DATASETS } from "../src/services/series-variation.js";
 
 // El token nunca se imprime. Las pruebas solo se activan explícitamente con
 // INDEC_RUN_LIVE_TESTS=1 (ver docs/FIXES.md) para no depender de la red en CI.
@@ -192,6 +197,30 @@ live("Contrato en vivo de las tools curadas", () => {
         text.match(/Registros devueltos:\*\* (\d+)/)?.[1] ?? 0
       );
       if (count < 1) failures.push(`${tool.name}: ${count} registros`);
+    }
+
+    expect(failures).toEqual([]);
+  }, 180_000);
+
+  it("indec_calcular_variacion calcula los seis datasets soportados", async () => {
+    const ctx: ToolContext = createContainer({ config: loadConfig() });
+
+    const failures: string[] = [];
+    for (const dataset of SUPPORTED_DATASETS) {
+      const result = await handleIndecCalcularVariacion(
+        calcularVariacionInputSchema.parse({
+          dataset,
+          desde: "202512",
+          hasta: "202609",
+        }),
+        ctx
+      );
+      const text = result.content[0]?.text ?? "";
+      if (result.isError) {
+        failures.push(`${dataset}: ${text.slice(0, 200)}`);
+      } else if (!text.includes("Variación acumulada")) {
+        failures.push(`${dataset}: sin variación acumulada`);
+      }
     }
 
     expect(failures).toEqual([]);

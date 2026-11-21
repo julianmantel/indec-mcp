@@ -43,6 +43,10 @@ import {
   handleIndecGetSalarios,
   getSalariosInputSchema,
 } from "./tools/curated/salarios.js";
+import {
+  handleIndecCalcularVariacion,
+  calcularVariacionInputSchema,
+} from "./tools/curated/calcular-variacion.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -291,6 +295,23 @@ export function createMcpServer(options: ServerOptions): McpServer {
     },
     async (args) => {
       return handleIndecGetSalarios(args, toolContext);
+    }
+  );
+
+  // 13. indec_calcular_variacion (Tool Curada)
+  server.registerTool(
+    "indec_calcular_variacion",
+    {
+      title: "Calcular variación porcentual de un índice del INDEC",
+      description:
+        "Calcula en el servidor la variación porcentual entre dos períodos de una serie de números índice del INDEC, de forma determinística y auditable. Devuelve la variación acumulada, la anualizada, el promedio mensual geométrico, opcionalmente un monto actualizado y, si se pide, la serie mensual usada. Compara el resultado con la variación oficial publicada (interanual o acumulada desde diciembre) y advierte si difiere en más de 0,1 pp.\n\nDatasets soportados: 'ipc_nacional' (IPC), 'indice_salarios' (Índice de Salarios), 'icc_precios_construccion' (ICC), 'sipm_precios_mayoristas' (SIPM/IPIM/IPIB/IPP), 'ipi_manufacturero' e 'ipi_minero'.\n\nEjemplos:\n- Inflación acumulada entre dic-2025 y oct-2026: { dataset: 'ipc_nacional', desde: '202512', hasta: '202610' }\n- Actualizar un monto de $1.000.000 por el IPC: { dataset: 'ipc_nacional', desde: '202512', hasta: '202610', monto: 1000000 }\n- Salarios privados registrados en 2025: { dataset: 'indice_salarios', desde: '202501', hasta: '202512', sector: 'Sector privado registrado' }\n- IPI manufacturero serie desestacionalizada con serie mensual: { dataset: 'ipi_manufacturero', desde: '202501', hasta: '202609', serie_ipi: 'desestacionalizada', mostrar_serie: true }",
+      inputSchema: calcularVariacionInputSchema.shape,
+      annotations: {
+        readOnlyHint: true,
+      },
+    },
+    async (args) => {
+      return handleIndecCalcularVariacion(args, toolContext);
     }
   );
 
